@@ -1,0 +1,26 @@
+name: decode-images
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.b64'
+permissions:
+  contents: write
+jobs:
+  decode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode b64 files
+        run: |
+          find . -name '*.b64' -not -path './.git/*' | while read f; do
+            base64 -d "$f" > "${f%.b64}"
+            rm "$f"
+          done
+      - name: Commit
+        run: |
+          git config user.name "kirchfeld"
+          git config user.email "schulverein@imkirchfeld.de"
+          git add -A
+          git diff --cached --quiet || git commit -m "Bilder dekodiert"
+          git push
